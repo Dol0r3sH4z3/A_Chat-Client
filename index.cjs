@@ -3994,7 +3994,7 @@ var import_crypto = require("crypto");
 // src/client/utils.ts
 var import_node_fs = require("node:fs");
 var import_node_path = require("node:path");
-var KEYS_PATH = "./KEYS/";
+var KEYS_PATH = "./KEYS2/";
 var roomsFilePath = (0, import_node_path.join)(KEYS_PATH, "rooms.json");
 var saveRoomKey = async (roomName, roomKey, myRooms) => {
   myRooms[roomName] = roomKey;
@@ -4316,27 +4316,27 @@ var handleClientCommand = async (ws, userCommand, myNickname, roomsDB, usersDB) 
 };
 
 // src/client/messageHandler.ts
-var handleOutgoingMessage = async (ws, trimmed, currentRoom, nickname, localUsersDB, myRooms) => {
-  if (currentRoom === "global") {
-    const preparedText = await encryptMessage(trimmed, localUsersDB, nickname);
+var handleOutgoingMessage = async (ws, trimmed) => {
+  if (state.currentRoom === "global") {
+    const preparedText = await encryptMessage(trimmed, state.localUsersDB);
     const preparedPacket = {
       type: "MESSAGE",
       payload: {
-        sender: nickname,
+        sender: state.nickname,
         ...preparedText
       }
     };
     ws.send(JSON.stringify(preparedPacket));
   } else {
-    const roomKey = myRooms[currentRoom];
+    const roomKey = state.myRooms[state.currentRoom];
     if (!roomKey) return;
     const preparedText = encryptRoomMessage(trimmed, roomKey);
     const preparedPacket = {
       type: "ROOM_MESSAGE",
-      roomName: currentRoom,
+      roomName: state.currentRoom,
       payload: {
         ...preparedText,
-        sender: nickname
+        sender: state.nickname
       }
     };
     ws.send(JSON.stringify(preparedPacket));
@@ -4376,7 +4376,7 @@ var handleInviteMessage = async (packet, nickname, myRooms) => {
     ["green"]
   );
 };
-var handleHistoryPacket = async (packet, myNickname, myRooms) => {
+var handleHistoryPacket = async (packet, myRooms) => {
   const historyMessages = packet.payload;
   if (!historyMessages || historyMessages.length === 0) {
     printPrettyMessage("Chat history is empty. Be first.", ["green"]);
@@ -4384,7 +4384,7 @@ var handleHistoryPacket = async (packet, myNickname, myRooms) => {
   }
   for (const msgPacket of historyMessages) {
     if (msgPacket.type === "MESSAGE")
-      await handleIncomingMessage(msgPacket, myNickname);
+      await handleIncomingMessage(msgPacket, state.nickname);
     else if (msgPacket.type === "ROOM_MESSAGE")
       await handleIncomingRoomMessage(msgPacket, myRooms);
   }
@@ -4400,7 +4400,7 @@ function startChatInput(ws) {
       const nextRoom = await handleClientCommand(ws, trimmed, state.nickname, state.myRooms, state.localUsersDB);
       if (nextRoom) state.currentRoom = nextRoom;
     } else {
-      await handleOutgoingMessage(ws, trimmed, state.currentRoom, state.nickname, state.localUsersDB, state.myRooms);
+      await handleOutgoingMessage(ws, trimmed);
     }
     return startChatInput(ws);
   });
@@ -4412,12 +4412,14 @@ async function start() {
   while (!state.nickname) {
     state.nickname = prompt("Enter your nickname: ");
   }
-  const ws = new wrapper_default("ws://185.221.162.18:8080");
+  const ws = new wrapper_default("ws://localhost:8080");
   ws.on("open", async () => {
     const authStatus = await runAuthentication(ws, state.nickname);
     if (authStatus) {
       ws.send(JSON.stringify({ type: "GET_HISTORY", roomName: "global" }));
       startChatInput(ws);
+    } else {
+      console.log("AUTH FAILED.");
     }
   });
   ws.on("error", (err) => console.error("!! CONNECTION ERROR:", err.message));
@@ -4449,7 +4451,7 @@ async function start() {
         await handleInviteMessage(packet, state.nickname, state.myRooms);
         break;
       case "HISTORY_RESPONSE":
-        await handleHistoryPacket(packet, state.nickname, state.myRooms);
+        await handleHistoryPacket(packet, state.myRooms);
         return;
     }
   });
