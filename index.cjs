@@ -3903,11 +3903,19 @@ async function log(msg, delay = 500) {
 }
 var ADMINS = ["DoloresHaze", "Root", "Elliot"];
 var THE_CREATOR = "D0loresH4ze";
-function printIncomingMessage(sender, text, roomName) {
+function printIncomingMessage(sender, text, roomName, isHistory = false) {
   const savedText = rl.line;
+  if (sender === state.nickname && !isHistory) {
+    readline2.clearLine(process.stdout, 0);
+    readline2.cursorTo(process.stdout, 0);
+    process.stdout.write("[You]: " + savedText);
+    return;
+  }
   readline2.clearLine(process.stdout, 0);
   readline2.cursorTo(process.stdout, 0);
-  const roomPrefix = roomName ? `\x1B[33m[#${roomName}]\x1B[0m ` : "";
+  let roomPrefix = "";
+  if (roomName && roomName !== "global")
+    roomPrefix = `\x1B[33m[#${roomName}]\x1B[0m `;
   const fullText = `${roomPrefix}${text}`;
   if (sender === state.nickname) {
     console.log("[You]: " + fullText);
@@ -4001,7 +4009,7 @@ var colors = {
   bgRed: "\x1B[41m",
   bgYellow: "\x1B[43m"
 };
-var mainMenu = async (cb) => {
+var mainMenu = async () => {
   const menuText = `[A_Chat Secure Node]
 
 status    : ${colors.red}online${colors.reset}
@@ -4082,9 +4090,7 @@ Good luck.`;
     if (isNaN(inputOption)) process.exit();
     switch (inputOption) {
       case 1: {
-        clearTerminal();
-        await cb();
-        break;
+        return true;
       }
       case 2: {
         clearTerminal();
@@ -4266,7 +4272,7 @@ var decryptMessage = async (message, myNickname) => {
   const myEncryptedKeyBase64 = recipients[myNickname];
   if (!myEncryptedKeyBase64) {
     console.log(
-      `[SYSTEM] (SENDER: ${sender}) THIS MESSAGE WAS NOT ENCRYPTED FOR YOU`
+      `${colors.red}[${sender}] This message was not encrypted for you.${colors.reset}`
     );
     return null;
   }
@@ -4508,7 +4514,7 @@ var handleOutgoingMessage = async (ws, trimmed) => {
     ws.send(JSON.stringify(preparedPacket));
   }
 };
-var handleIncomingRoomMessage = async (packet, myRooms) => {
+var handleIncomingRoomMessage = async (packet, myRooms, isHistory = false) => {
   const roomName = packet.roomName;
   const roomKey = myRooms[roomName];
   if (!roomKey) {
@@ -4521,12 +4527,17 @@ var handleIncomingRoomMessage = async (packet, myRooms) => {
     packet.payload.authTag
   );
   if (!message) return;
-  printIncomingMessage(packet.payload.sender, message, roomName);
+  printIncomingMessage(packet.payload.sender, message, roomName, isHistory);
 };
-var handleIncomingMessage = async (packet, nickname) => {
+var handleIncomingMessage = async (packet, nickname, isHistory = false) => {
   const decryptedText = await decryptMessage(packet, nickname);
   if (decryptedText !== null)
-    printIncomingMessage(packet.payload.sender, decryptedText);
+    printIncomingMessage(
+      packet.payload.sender,
+      decryptedText,
+      "global",
+      isHistory
+    );
 };
 var handleInviteMessage = async (packet, nickname, myRooms) => {
   const roomKey = await decryptMessage(packet, nickname);
@@ -4550,7 +4561,7 @@ var handleHistoryPacket = async (packet, myRooms) => {
   }
   for (const msgPacket of historyMessages) {
     if (msgPacket.type === "MESSAGE")
-      await handleIncomingMessage(msgPacket, state.nickname);
+      await handleIncomingMessage(msgPacket, state.nickname, true);
     else if (msgPacket.type === "ROOM_MESSAGE")
       await handleIncomingRoomMessage(msgPacket, myRooms);
   }
@@ -4559,6 +4570,7 @@ var handleHistoryPacket = async (packet, myRooms) => {
 // src/client/index.ts
 var prompt = (0, import_prompt_sync.default)({ sigint: true });
 function startChatInput(ws) {
+  rl.resume();
   rl.question("[You]: ", async (text) => {
     const trimmed = text.trim();
     if (!trimmed) return startChatInput(ws);
@@ -4568,7 +4580,7 @@ function startChatInput(ws) {
     } else {
       await handleOutgoingMessage(ws, trimmed);
     }
-    return startChatInput(ws);
+    startChatInput(ws);
   });
 }
 async function start() {
@@ -4622,4 +4634,11 @@ async function start() {
     }
   });
 }
-mainMenu(start);
+async function init() {
+  await mainMenu();
+  await start();
+}
+init().catch((err) => {
+  console.error("[FATAL] App crashed:", err);
+  process.exit(1);
+});
