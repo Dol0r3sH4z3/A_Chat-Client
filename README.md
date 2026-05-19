@@ -36,3 +36,4 @@ If not,
 observe carefully.
 
 The network only reveals itself to those who notice the pattern.
+Find the solution to access the highest levels.
