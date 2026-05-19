@@ -2233,7 +2233,7 @@ var require_websocket = __commonJS({
     var http = require("http");
     var net = require("net");
     var tls = require("tls");
-    var { randomBytes: randomBytes2, createHash } = require("crypto");
+    var { randomBytes: randomBytes2, createHash: createHash2 } = require("crypto");
     var { Duplex, Readable } = require("stream");
     var { URL } = require("url");
     var PerMessageDeflate2 = require_permessage_deflate();
@@ -2893,7 +2893,7 @@ var require_websocket = __commonJS({
           abortHandshake(websocket, socket, "Invalid Upgrade header");
           return;
         }
-        const digest = createHash("sha1").update(key + GUID).digest("base64");
+        const digest = createHash2("sha1").update(key + GUID).digest("base64");
         if (res.headers["sec-websocket-accept"] !== digest) {
           abortHandshake(websocket, socket, "Invalid Sec-WebSocket-Accept header");
           return;
@@ -3260,7 +3260,7 @@ var require_websocket_server = __commonJS({
     var EventEmitter = require("events");
     var http = require("http");
     var { Duplex } = require("stream");
-    var { createHash } = require("crypto");
+    var { createHash: createHash2 } = require("crypto");
     var extension2 = require_extension();
     var PerMessageDeflate2 = require_permessage_deflate();
     var subprotocol2 = require_subprotocol();
@@ -3561,7 +3561,7 @@ var require_websocket_server = __commonJS({
           );
         }
         if (this._state > RUNNING) return abortHandshake(socket, 503);
-        const digest = createHash("sha1").update(key + GUID).digest("base64");
+        const digest = createHash2("sha1").update(key + GUID).digest("base64");
         const headers = [
           "HTTP/1.1 101 Switching Protocols",
           "Upgrade: websocket",
@@ -3895,10 +3895,11 @@ var state = {
 };
 
 // src/client/ui.ts
-var sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+var import_node_crypto = require("node:crypto");
+var import_promises = require("node:timers/promises");
 async function log(msg, delay = 500) {
   console.log(msg);
-  await sleep(delay);
+  await (0, import_promises.setTimeout)(delay);
 }
 var ADMINS = ["DoloresHaze", "Root", "Elliot"];
 var THE_CREATOR = "D0loresH4ze";
@@ -3929,11 +3930,18 @@ function printIncomingMessage(sender, text, roomName) {
 }
 function printGreeting() {
   process.stdout.write("\x1B[2J\x1B[0;0H");
-  console.log("\x1B[35m===============================================\x1B[0m");
-  console.log("\x1B[35m\x1B[1m         Welcome to A-CHAT v1.0 (L1/L2)        \x1B[0m");
-  console.log("\x1B[35m   Secure, decentralized, end-to-end encrypted  \x1B[0m");
-  console.log("\x1B[35m===============================================\x1B[0m");
-  console.log("\n>> Initializing cryptographic identities...");
+  const banner = `                                                                           
+       db                   ,ad8888ba,   88                                
+      d88b                 d8"'    \`"8b  88                         ,d     
+     d8'\`8b               d8'            88                         88     
+    d8'  \`8b              88             88,dPPYba,   ,adPPYYba,  MM88MMM  
+   d8YaaaaY8b   aaaaaaaa  88             88P'    "8a  ""     \`Y8    88     
+  d8""""""""8b  """"""""  Y8,            88       88  ,adPPPPP88    88     
+ d8'        \`8b            Y8a.    .a8P  88       88  88,    ,88    88,    
+d8'          \`8b            \`"Y8888Y"'   88       88  \`"8bbdP"Y8    "Y888  
+                                                                           
+`;
+  console.log(banner);
 }
 var printGlobalBanner = () => {
   const line = "===============================================";
@@ -3972,6 +3980,13 @@ var printPrettyMessage = (text, styles) => {
   process.stdout.write("[You]: " + savedText);
   return;
 };
+var askQuestion = (query) => {
+  return new Promise((resolve) => rl.question(query, resolve));
+};
+var clearTerminal = () => {
+  readline2.cursorTo(process.stdout, 0, 0);
+  readline2.clearScreenDown(process.stdout);
+};
 var colors = {
   reset: "\x1B[0m",
   bright: "\x1B[1m",
@@ -3985,6 +4000,157 @@ var colors = {
   white: "\x1B[37m",
   bgRed: "\x1B[41m",
   bgYellow: "\x1B[43m"
+};
+var mainMenu = async (cb) => {
+  const menuText = `[A_Chat Secure Node]
+
+status    : ${colors.red}online${colors.reset}
+protocol  : ${colors.red}E2EE/X25519${colors.reset}
+observers : ${colors.red}unknown${colors.reset}
+
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+[1] enter the chat
+[2] about
+[3] more
+[4] enter the key
+[5] exit
+
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+`;
+  const aboutText = `                                                                                     
+                                                                                     
+
+                            %@@@@@@@@                                      
+                     *@@@@@@@@@@@@@@@@@@@@@*                               
+                 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                           
+              @@@@@@@@@%     @@@@@@@     %@@@@@@@@@                        
+           %@@@@@@@        @@@@@@@@@@@        @@@@@@@%                     
+         @@@@@@@         @@@@@@@@@@@@@@@         @@@@@@@                   
+       @@@@@@%           @@@@@@@@@@@@@@@           %@@@@@@                 
+      @@@@@             @@@@@@@@@@@@@@@@@             @@@@@                
+       @@@@@@%           @@@@@@@@@@@@@@@           #@@@@@@                 
+         @@@@@@@         @@@@@@@@@@@@@@@         @@@@@@@                   
+           %@@@@@@@        @@@@@@@@@@@.       @@@@@@@%                     
+              @@@@@@@@@%     @@@@@@@     %@@@@@@@@@                        
+                 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                           
+                     *@@@@@@@@@@@@@@@@@@@@@*                               
+                            @@@@@@@@@                                      
+                                                                           
+                                                                           
+                                                                           
+                    MOST PEOPLE      WALK PAST                               
+
+              A_Chat is an experimental encrypted
+                    communication network.
+
+                         No recovery.
+                        No telemetry.
+                     No central authority.
+
+                    Control is an illusion.
+`;
+  const moreText = `[SYSTEM]: NO BROADCASTS ACTIVE.
+
+Observe patterns.
+Collect fragments.
+Avoid noise.
+
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+[DAEMON_LOG_0x09]:
+00:13:37 [NET] Listening on interface tun0...
+00:13:39 [SYS] Buffer overflow attempt detected and mitigated.
+00:14:02 [ENC] Payload encrypted using host cipher.
+
+[HEX_STREAM]:
+74 68 65 5f 66 69 72 73 74 5f 73 74 65 70 5f 69 
+73 5f 74 68 65 5f 68 61 72 64 65 73 74 5f 4e 56
+
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+V2Ugd2FudCB0aGUgYmVzdCwgbm90IHRoZSBmb2xsb3dlcnMu
+Good luck.`;
+  while (true) {
+    clearTerminal();
+    printGreeting();
+    console.log(menuText);
+    const input = await askQuestion("> ");
+    if (!input) process.exit();
+    const inputOption = parseInt(input);
+    if (isNaN(inputOption)) process.exit();
+    switch (inputOption) {
+      case 1: {
+        clearTerminal();
+        await cb();
+        break;
+      }
+      case 2: {
+        clearTerminal();
+        console.log(aboutText);
+        console.log("\n\x1B[33mPress any key to return to main menu...\x1B[0m");
+        process.stdin.setRawMode(true);
+        process.stdin.resume();
+        await new Promise((resolve) => {
+          process.stdin.once("data", (data) => {
+            if (data.toString() === "") {
+              process.exit();
+            }
+            resolve();
+          });
+        });
+        process.stdin.setRawMode(false);
+        break;
+      }
+      case 3: {
+        clearTerminal();
+        console.log(moreText);
+        console.log("\n\x1B[33mPress any key to return to main menu...\x1B[0m");
+        process.stdin.setRawMode(true);
+        process.stdin.resume();
+        await new Promise((resolve) => {
+          process.stdin.once("data", (data) => {
+            if (data.toString() === "") {
+              process.exit();
+            }
+            resolve();
+          });
+        });
+        process.stdin.setRawMode(false);
+        break;
+      }
+      case 4: {
+        clearTerminal();
+        console.log(`
+[KEY AUTHORIZATION]
+    
+Enter access key: `);
+        const key = await askQuestion("> ");
+        const hash = (0, import_node_crypto.createHash)("sha256").update(key).digest("hex");
+        if (hash === "837c2f820a2de378bcd3957ed290048eebb2a035e43f2eb71174629ede0cf944") {
+          console.log("\x1B[32mACCESS GRANTED.\x1B[0m");
+          console.log("\nEstablishing secure tunnel...");
+          await (0, import_promises.setTimeout)(2e3);
+          return;
+        } else {
+          await (0, import_promises.setTimeout)(2e3);
+          console.log(
+            "\n[ERROR] Access denied.\nThe door remains closed to followers. Come back when you have the signal."
+          );
+          await (0, import_promises.setTimeout)(2e3);
+          break;
+        }
+        break;
+      }
+      case 5: {
+        process.exit();
+      }
+      default: {
+        break;
+      }
+    }
+  }
 };
 
 // src/client/crypto.ts
@@ -4391,7 +4557,7 @@ var handleHistoryPacket = async (packet, myRooms) => {
 };
 
 // src/client/index.ts
-var prompt = (0, import_prompt_sync.default)();
+var prompt = (0, import_prompt_sync.default)({ sigint: true });
 function startChatInput(ws) {
   rl.question("[You]: ", async (text) => {
     const trimmed = text.trim();
@@ -4406,7 +4572,7 @@ function startChatInput(ws) {
   });
 }
 async function start() {
-  printGreeting();
+  clearTerminal();
   await getIdentity();
   state.nickname = "";
   while (!state.nickname) {
@@ -4456,4 +4622,4 @@ async function start() {
     }
   });
 }
-start();
+mainMenu(start);

@@ -6,6 +6,8 @@
 
 ## Initialization
 
+Install Termux / Use linux terminal.
+
 ```bash
 pkg install git nodejs
 
@@ -16,7 +18,7 @@ node index.cjs
 
 ---
 
-## Reconnect
+## Re-entry
 
 ```bash
 cd A_Chat-Client
@@ -25,15 +27,22 @@ node index.cjs
 
 ---
 
+## Update
+
+```bash
+cd A_Chat-Client
+git pull
+```
+
+---
+
 ## Notice
 
-Not everyone was meant to find this.
+A_Chat is a closed loop.
+No telemetry. No logs. No recovery.
+We don't forgive mistakes.
 
-If you're here by accident,
-leave.
+Level 1 is an illusion. Deeper layers are encrypted.
+Access is not granted; it is decrypted.
 
-If not,
-observe carefully.
-
-The network only reveals itself to those who notice the pattern.
-Find the solution to access the highest levels.
+Welcome to the void.
