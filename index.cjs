@@ -3994,7 +3994,7 @@ var import_crypto = require("crypto");
 // src/client/utils.ts
 var import_node_fs = require("node:fs");
 var import_node_path = require("node:path");
-var KEYS_PATH = "./KEYS2/";
+var KEYS_PATH = "./KEYS/";
 var roomsFilePath = (0, import_node_path.join)(KEYS_PATH, "rooms.json");
 var saveRoomKey = async (roomName, roomKey, myRooms) => {
   myRooms[roomName] = roomKey;
@@ -4412,7 +4412,7 @@ async function start() {
   while (!state.nickname) {
     state.nickname = prompt("Enter your nickname: ");
   }
-  const ws = new wrapper_default("ws://localhost:8080");
+  const ws = new wrapper_default("ws://185.221.162.18:8080");
   ws.on("open", async () => {
     const authStatus = await runAuthentication(ws, state.nickname);
     if (authStatus) {
