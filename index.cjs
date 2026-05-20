@@ -3897,8 +3897,6 @@ var state = {
 // src/client/ui.ts
 var import_node_crypto = require("node:crypto");
 var import_promises = require("node:timers/promises");
-var import_node_fs = require("node:fs");
-var import_node_path = __toESM(require("node:path"), 1);
 async function log(msg, delay = 500) {
   console.log(msg);
   await (0, import_promises.setTimeout)(delay);
@@ -3940,14 +3938,13 @@ function printIncomingMessage(sender, text, roomName, isHistory = false) {
 }
 function printGreeting() {
   process.stdout.write("\x1B[2J\x1B[0;0H");
-  const bannerPath = import_node_path.default.join(
-    process.cwd(),
-    "src",
-    "client",
-    "banners",
-    "banner.txt"
-  );
-  const banner = (0, import_node_fs.readFileSync)(bannerPath, "utf-8");
+  const banner = ` ______            ____     __                __      
+/\\  _  \\          /\\  _\`\\  /\\ \\              /\\ \\__   
+\\ \\ \\L\\ \\         \\ \\ \\/\\_\\\\ \\ \\___      __  \\ \\ ,_\\  
+ \\ \\  __ \\  _______\\ \\ \\/_/_\\ \\  _ \`\\  /'__\`\\ \\ \\ \\/  
+  \\ \\ \\/\\ \\/\\______\\\\ \\ \\L\\ \\\\ \\ \\ \\ \\/\\ \\L\\.\\_\\ \\ \\_ 
+   \\ \\_\\ \\_\\/______/ \\ \\____/ \\ \\_\\ \\_\\ \\__/.\\_\\\\ \\__\\
+    \\/_/\\/_/          \\/___/   \\/_/\\/_/\\/__/\\/_/ \\/__/`;
   console.log(banner);
 }
 var printGlobalBanner = () => {
@@ -4190,13 +4187,13 @@ var import_fs = require("fs");
 var import_crypto = require("crypto");
 
 // src/client/utils.ts
-var import_node_fs2 = require("node:fs");
-var import_node_path2 = require("node:path");
+var import_node_fs = require("node:fs");
+var import_node_path = require("node:path");
 var KEYS_PATH = "./KEYS/";
-var roomsFilePath = (0, import_node_path2.join)(KEYS_PATH, "rooms.json");
+var roomsFilePath = (0, import_node_path.join)(KEYS_PATH, "rooms.json");
 var saveRoomKey = async (roomName, roomKey, myRooms) => {
   myRooms[roomName] = roomKey;
-  (0, import_node_fs2.writeFileSync)(roomsFilePath, JSON.stringify(myRooms, null, 2));
+  (0, import_node_fs.writeFileSync)(roomsFilePath, JSON.stringify(myRooms, null, 2));
 };
 
 // src/client/crypto.ts
@@ -4435,8 +4432,8 @@ var runAuthentication = async (ws, nickname) => {
 };
 
 // src/client/commands.ts
-var import_node_fs3 = require("node:fs");
-var import_node_path3 = require("node:path");
+var import_node_fs2 = require("node:fs");
+var import_node_path2 = require("node:path");
 var handleClientCommand = async (ws, userCommand, myNickname, roomsDB, usersDB) => {
   const command = userCommand.split(" ");
   switch (command[0]) {
@@ -4449,8 +4446,8 @@ var handleClientCommand = async (ws, userCommand, myNickname, roomsDB, usersDB) 
       const roomKey = generateRoomKey();
       roomsDB[roomName] = roomKey;
       console.log(`Room ${roomName} created successfully.`);
-      (0, import_node_fs3.writeFileSync)(
-        (0, import_node_path3.join)(KEYS_PATH, "rooms.json"),
+      (0, import_node_fs2.writeFileSync)(
+        (0, import_node_path2.join)(KEYS_PATH, "rooms.json"),
         JSON.stringify(roomsDB, null, 2)
       );
       return;
