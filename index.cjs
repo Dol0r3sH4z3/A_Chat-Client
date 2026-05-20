@@ -3897,6 +3897,8 @@ var state = {
 // src/client/ui.ts
 var import_node_crypto = require("node:crypto");
 var import_promises = require("node:timers/promises");
+var import_node_fs = require("node:fs");
+var import_node_path = __toESM(require("node:path"), 1);
 async function log(msg, delay = 500) {
   console.log(msg);
   await (0, import_promises.setTimeout)(delay);
@@ -3938,17 +3940,14 @@ function printIncomingMessage(sender, text, roomName, isHistory = false) {
 }
 function printGreeting() {
   process.stdout.write("\x1B[2J\x1B[0;0H");
-  const banner = `                                                                           
-       db                   ,ad8888ba,   88                                
-      d88b                 d8"'    \`"8b  88                         ,d     
-     d8'\`8b               d8'            88                         88     
-    d8'  \`8b              88             88,dPPYba,   ,adPPYYba,  MM88MMM  
-   d8YaaaaY8b   aaaaaaaa  88             88P'    "8a  ""     \`Y8    88     
-  d8""""""""8b  """"""""  Y8,            88       88  ,adPPPPP88    88     
- d8'        \`8b            Y8a.    .a8P  88       88  88,    ,88    88,    
-d8'          \`8b            \`"Y8888Y"'   88       88  \`"8bbdP"Y8    "Y888  
-                                                                           
-`;
+  const bannerPath = import_node_path.default.join(
+    process.cwd(),
+    "src",
+    "client",
+    "banners",
+    "banner.txt"
+  );
+  const banner = (0, import_node_fs.readFileSync)(bannerPath, "utf-8");
   console.log(banner);
 }
 var printGlobalBanner = () => {
@@ -4011,9 +4010,10 @@ var colors = {
 };
 var mainMenu = async () => {
   const menuText = `[A_Chat Secure Node]
+${colors.red}countdown https://thrn.netlify.app${colors.reset}
 
-status    : ${colors.red}online${colors.reset}
-protocol  : ${colors.red}E2EE/X25519${colors.reset}
+status    : ${colors.green}online${colors.reset}
+protocol  : ${colors.green}E2EE/X25519${colors.reset}
 observers : ${colors.red}unknown${colors.reset}
 
 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
@@ -4022,7 +4022,8 @@ observers : ${colors.red}unknown${colors.reset}
 [2] about
 [3] more
 [4] enter the key
-[5] exit
+[5] view available commands
+[6] exit
 
 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 
@@ -4080,6 +4081,14 @@ Avoid noise.
 
 V2Ugd2FudCB0aGUgYmVzdCwgbm90IHRoZSBmb2xsb3dlcnMu
 Good luck.`;
+  const commands = `
+  
+  /help - view available commands
+  /create_room <room name> - create a private group
+  /invite <room name> <username> - invite user to your private group
+  /join <room name> - join your private room
+  /leave - return to the global chat
+  /send <username> <message> - send a message directly to user`;
   while (true) {
     clearTerminal();
     printGreeting();
@@ -4150,6 +4159,23 @@ Enter access key: `);
         break;
       }
       case 5: {
+        clearTerminal();
+        console.log(commands);
+        console.log("\n\x1B[33mPress any key to return to main menu...\x1B[0m");
+        process.stdin.setRawMode(true);
+        process.stdin.resume();
+        await new Promise((resolve) => {
+          process.stdin.once("data", (data) => {
+            if (data.toString() === "") {
+              process.exit();
+            }
+            resolve();
+          });
+        });
+        process.stdin.setRawMode(false);
+        break;
+      }
+      case 6: {
         process.exit();
       }
       default: {
@@ -4164,13 +4190,13 @@ var import_fs = require("fs");
 var import_crypto = require("crypto");
 
 // src/client/utils.ts
-var import_node_fs = require("node:fs");
-var import_node_path = require("node:path");
+var import_node_fs2 = require("node:fs");
+var import_node_path2 = require("node:path");
 var KEYS_PATH = "./KEYS/";
-var roomsFilePath = (0, import_node_path.join)(KEYS_PATH, "rooms.json");
+var roomsFilePath = (0, import_node_path2.join)(KEYS_PATH, "rooms.json");
 var saveRoomKey = async (roomName, roomKey, myRooms) => {
   myRooms[roomName] = roomKey;
-  (0, import_node_fs.writeFileSync)(roomsFilePath, JSON.stringify(myRooms, null, 2));
+  (0, import_node_fs2.writeFileSync)(roomsFilePath, JSON.stringify(myRooms, null, 2));
 };
 
 // src/client/crypto.ts
@@ -4409,8 +4435,8 @@ var runAuthentication = async (ws, nickname) => {
 };
 
 // src/client/commands.ts
-var import_node_fs2 = require("node:fs");
-var import_node_path2 = require("node:path");
+var import_node_fs3 = require("node:fs");
+var import_node_path3 = require("node:path");
 var handleClientCommand = async (ws, userCommand, myNickname, roomsDB, usersDB) => {
   const command = userCommand.split(" ");
   switch (command[0]) {
@@ -4423,8 +4449,8 @@ var handleClientCommand = async (ws, userCommand, myNickname, roomsDB, usersDB) 
       const roomKey = generateRoomKey();
       roomsDB[roomName] = roomKey;
       console.log(`Room ${roomName} created successfully.`);
-      (0, import_node_fs2.writeFileSync)(
-        (0, import_node_path2.join)(KEYS_PATH, "rooms.json"),
+      (0, import_node_fs3.writeFileSync)(
+        (0, import_node_path3.join)(KEYS_PATH, "rooms.json"),
         JSON.stringify(roomsDB, null, 2)
       );
       return;
@@ -4479,6 +4505,46 @@ var handleClientCommand = async (ws, userCommand, myNickname, roomsDB, usersDB) 
       printGlobalBanner();
       ws.send(JSON.stringify({ type: "GET_HISTORY", roomName: "global" }));
       return "global";
+    }
+    case "/send": {
+      let targetNickname = command[1];
+      let text = command.slice(2).join(" ");
+      if (!targetNickname) {
+        console.log("Usage: /send <username> <message>");
+        return;
+      } else {
+        if (targetNickname[0] === '"') {
+          const first = userCommand.indexOf('"');
+          const second = userCommand.indexOf('"', first + 1);
+          const inQuotes = userCommand.substring(first + 1, second);
+          const afterQuotes = userCommand.substring(second + 1).trimStart();
+          targetNickname = inQuotes;
+          text = afterQuotes;
+        }
+        if (!usersDB[targetNickname]) {
+          console.log("User not found.");
+          return;
+        }
+      }
+      const encryptedMessage = await encryptMessage(
+        text,
+        usersDB,
+        targetNickname
+      );
+      const packet = {
+        type: "DIRECT_MESSAGE",
+        targetNickname,
+        payload: {
+          ...encryptedMessage,
+          sender: myNickname
+        }
+      };
+      ws.send(JSON.stringify(packet));
+      break;
+    }
+    case "/get_observers": {
+      ws.send(JSON.stringify({ type: "GET_ACTIVE_USERS" }));
+      break;
     }
     default: {
       console.log("Unknown command.");
@@ -4539,6 +4605,18 @@ var handleIncomingMessage = async (packet, nickname, isHistory = false) => {
       isHistory
     );
 };
+var handleIncomingDirectMessage = async (packet, isHistory = false) => {
+  const targetNickname = packet.targetNickname;
+  if (!targetNickname || targetNickname !== state.nickname) return;
+  const decryptedMessage = await decryptMessage(packet, state.nickname);
+  if (!decryptedMessage) return;
+  printIncomingMessage(
+    packet.payload.sender,
+    decryptedMessage,
+    "direct",
+    isHistory
+  );
+};
 var handleInviteMessage = async (packet, nickname, myRooms) => {
   const roomKey = await decryptMessage(packet, nickname);
   if (!roomKey) {
@@ -4568,6 +4646,7 @@ var handleHistoryPacket = async (packet, myRooms) => {
 };
 
 // src/client/index.ts
+var import_node_readline = require("node:readline");
 var prompt = (0, import_prompt_sync.default)({ sigint: true });
 function startChatInput(ws) {
   rl.resume();
@@ -4586,9 +4665,23 @@ function startChatInput(ws) {
 async function start() {
   clearTerminal();
   await getIdentity();
+  console.log(
+    `
+${colors.cyan}[IDENTITY]${colors.reset} Enter your nickname (New handles will be automatically registered).`
+  );
+  console.log(
+    `${colors.red}[WARNING]${colors.reset} Identity parameters are permanent. Choose wisely.
+`
+  );
   state.nickname = "";
-  while (!state.nickname) {
-    state.nickname = prompt("Enter your nickname: ");
+  while (true) {
+    const input = prompt("Enter your nickname: ");
+    const cleaned = input?.trim();
+    if (cleaned && cleaned.length >= 2 && cleaned.length <= 15 && cleaned[0] !== '"' && cleaned.slice(-1) !== '"') {
+      state.nickname = cleaned;
+      break;
+    }
+    console.log("Invalid nickname! It must be between 2 and 15 characters.");
   }
   const ws = new wrapper_default("ws://185.221.162.18:8080");
   ws.on("open", async () => {
@@ -4600,7 +4693,7 @@ async function start() {
       console.log("AUTH FAILED.");
     }
   });
-  ws.on("error", (err) => console.error("!! CONNECTION ERROR:", err.message));
+  ws.on("error", (err) => console.error("CONNECTION ERROR:", err.message));
   ws.on("message", async (data) => {
     const packet = JSON.parse(data.toString());
     switch (packet.type) {
@@ -4612,6 +4705,9 @@ async function start() {
         break;
       case "MESSAGE":
         await handleIncomingMessage(packet, state.nickname);
+        break;
+      case "DIRECT_MESSAGE":
+        await handleIncomingDirectMessage(packet);
         break;
       case "USER_JOINED":
         printPrettyMessage(
@@ -4631,7 +4727,16 @@ async function start() {
       case "HISTORY_RESPONSE":
         await handleHistoryPacket(packet, state.myRooms);
         return;
+      case "ACTIVE_USERS_LIST":
+        console.log(packet.payload);
+        return;
     }
+  });
+  ws.on("close", () => {
+    (0, import_node_readline.clearLine)(process.stdout, 0);
+    (0, import_node_readline.cursorTo)(process.stdout, 0);
+    console.log("Error: Connection reset.");
+    process.exit();
   });
 }
 async function init() {
