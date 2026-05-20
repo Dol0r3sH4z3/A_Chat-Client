@@ -4538,6 +4538,17 @@ var handleClientCommand = async (ws, userCommand, myNickname, roomsDB, usersDB) 
       ws.send(JSON.stringify(packet));
       break;
     }
+    case "/help": {
+      console.log(`
+  
+  /help - view available commands
+  /create_room <room name> - create a private group
+  /invite <room name> <username> - invite user to your private group
+  /join <room name> - join your private room
+  /leave - return to the global chat
+  /send <username> <message> - send a message directly to user`);
+      return;
+    }
     case "/get_observers": {
       ws.send(JSON.stringify({ type: "GET_ACTIVE_USERS" }));
       break;
